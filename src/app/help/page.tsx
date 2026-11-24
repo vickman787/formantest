@@ -23,9 +23,8 @@ export default function Help() {
       </div>
 
       <div className="box" style={{ marginTop: 16 }}>
-        <h2>Demo vs live</h2>
-        <p><b>Demo mode</b> simulates payment — no funds move, and every receipt is labelled demo. It exists so you can try the whole flow before mainnet.</p>
-        <p><b>Live mode</b> runs on QIE Mainnet with real QUSDC. A wallet prompt or a transaction hash is not proof of funding: our server reads the receipt and the escrow event before any work starts.</p>
+        <h2>Real payments only</h2>
+        <p>Forma runs on QIE Mainnet with real QUSDC. There is no simulated checkout. A wallet prompt or a transaction hash is not proof of funding: our server reads the receipt and the escrow event before any work starts.</p>
       </div>
 
       <div className="box" style={{ marginTop: 16 }}>

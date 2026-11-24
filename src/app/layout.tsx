@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
-import { APP_MODE } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Forma — Your next big idea. Ready to launch.",
@@ -12,10 +11,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className={`mode-banner${APP_MODE === "demo" ? " demo" : ""}`} role="status">
-          {APP_MODE === "demo"
-            ? "Demo mode — no funds move. Payments are simulated and receipts are labelled demo."
-            : "Live on QIE Mainnet · QUSDC · 1 QUSDC per service"}
+        <div className="mode-banner" role="status">
+          Live on QIE Mainnet · QUSDC · 1 QUSDC per service
         </div>
         <header className="wrap nav">
           <Link href="/" className="logo"><span className="mark" aria-hidden />forma</Link>

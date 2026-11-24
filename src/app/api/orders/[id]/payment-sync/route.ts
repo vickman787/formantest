@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireCustomer } from "@/lib/auth";
-import { APP_MODE } from "@/lib/config";
 import { verifyFunding } from "@/lib/escrow";
 import { addEvent, getOrderOwned, updateOrder } from "@/lib/jobs";
 
 /**
  * POST /api/orders/:id/payment-sync — server-verified reconciliation.
  * The client never proves payment with a hash alone; the server reads the
- * receipt and the escrow event. Demo mode simulates funding explicitly
- * and labels it demo everywhere.
+ * receipt and the escrow event. There is no simulated funding.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -22,20 +20,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (order.state === "draft") {
       return NextResponse.json({ error: "Get a quote first — the price and funding window are frozen at quote time." }, { status: 400 });
     }
-    const body = (await req.json().catch(() => ({}))) as { tx_hash?: string; demo?: boolean };
+    const body = (await req.json().catch(() => ({}))) as { tx_hash?: string };
 
-    if (APP_MODE === "demo") {
-      if (!body.demo) return NextResponse.json({ error: "Demo mode: pass demo:true to simulate funding. No funds move." }, { status: 400 });
-      await updateOrder(id, {
-        payment_state: "funded",
-        state: "queued",
-        delivery_deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      });
-      await addEvent(id, "funded_demo", "Demo payment simulated — no funds moved. Job queued for generation.");
-      return NextResponse.json({ ok: true, demo: true, payment_state: "funded", state: "queued" });
-    }
-
-    // Live: verify the receipt + escrow event onchain.
+    // Verify the receipt + escrow event onchain.
     if (!body.tx_hash || !/^0x[0-9a-fA-F]{64}$/.test(body.tx_hash)) {
       return NextResponse.json({ error: "A funding transaction hash is required." }, { status: 400 });
     }

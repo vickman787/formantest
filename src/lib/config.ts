@@ -1,5 +1,4 @@
 /** Public chain + pricing config. Secrets never live here. */
-export const APP_MODE = (process.env.APP_MODE ?? "demo").toLowerCase() === "live" ? "live" : "demo";
 export const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 export const QIE_CHAIN_ID = Number(process.env.QIE_CHAIN_ID ?? 1990);
 export const QIE_RPC_URL = process.env.QIE_RPC_URL ?? "https://rpc1mainnet.qie.digital";
@@ -22,7 +21,8 @@ export const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
 export const OPENAI_TEXT_MODEL = process.env.OPENAI_TEXT_MODEL ?? "";
 export const OPENAI_RESEARCH_MODEL = process.env.OPENAI_RESEARCH_MODEL ?? "";
 
-/** Live mode is only real when the escrow is deployed and configured. */
+/** The app is live-only: real escrow, real money, real research. It is
+ *  only ready when the escrow is deployed and configured. */
 export function liveReady(): boolean {
-  return APP_MODE === "live" && ESCROW_ADDRESS !== "" && TREASURY_ADDRESS !== "";
+  return ESCROW_ADDRESS !== "" && TREASURY_ADDRESS !== "";
 }

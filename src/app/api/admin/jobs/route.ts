@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentCustomer } from "@/lib/auth";
-import { ADMIN_WALLETS, APP_MODE } from "@/lib/config";
+import { ADMIN_WALLETS } from "@/lib/config";
 import { ensureSchema, getPool } from "@/lib/db";
 
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
     "SELECT COUNT(*)::int AS funded_unsettled, COALESCE(SUM(amount_base_units::bigint),0)::text AS base_units FROM orders WHERE payment_state IN ('funded','release_pending','refund_pending')",
   );
   return NextResponse.json({
-    mode: APP_MODE,
+    mode: "live",
     orders: orders.rows,
     failures: failed.rows,
     liabilities: liabilities.rows[0],

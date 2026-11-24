@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { currentCustomer } from "@/lib/auth";
 import { artifactPath } from "@/lib/artifacts";
-import { APP_MODE, ESCROW_ADDRESS, QUSDC_ADDRESS } from "@/lib/config";
+import { ESCROW_ADDRESS, QUSDC_ADDRESS } from "@/lib/config";
 import { ensureSchema, getPool } from "@/lib/db";
 import { getOrderOwned, listEvents } from "@/lib/jobs";
 import { SERVICES } from "@/lib/services";
@@ -135,12 +135,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, fontSize: 13 }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--muted)" }}>Service price</span><b>1 QUSDC</b></div>
               <p style={{ fontSize: 12, color: "var(--muted)" }}>
-                {APP_MODE === "demo" ? "Demo mode — no funds have moved." : "Live on QIE Mainnet."} Escrow status: {order.payment_state}.
+                Live on QIE Mainnet. Escrow status: {order.payment_state}.
               </p>
             </div>
           </div>
           <div style={{ marginTop: 16 }}>
-            <ProjectActions orderId={id} state={order.state} paymentState={order.payment_state} mode={APP_MODE} chainJobId={order.chain_job_id} escrowAddress={ESCROW_ADDRESS} qusdcAddress={QUSDC_ADDRESS} />
+            <ProjectActions orderId={id} state={order.state} paymentState={order.payment_state} chainJobId={order.chain_job_id} escrowAddress={ESCROW_ADDRESS} qusdcAddress={QUSDC_ADDRESS} />
           </div>
         </aside>
       </div>

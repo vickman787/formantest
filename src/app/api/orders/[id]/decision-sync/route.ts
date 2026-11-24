@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireCustomer } from "@/lib/auth";
-import { APP_MODE } from "@/lib/config";
 import { readJobStatus } from "@/lib/escrow";
 import { addEvent, getOrderOwned, updateOrder } from "@/lib/jobs";
 
 /**
  * POST /api/orders/:id/decision-sync — reconcile the customer's onchain
  * acceptance. Clicking Accept in the UI only starts the decision; this
- * endpoint confirms it onchain (or simulates it, labelled demo).
- * Only the recorded customer can accept, and only once.
+ * endpoint confirms it onchain. Only the recorded customer can accept,
+ * and only once.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,13 +20,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     if (order.payment_state === "released") {
       return NextResponse.json({ ok: true, payment_state: "released", already: true });
-    }
-    const body = (await req.json().catch(() => ({}))) as { demo?: boolean };
-
-    if (APP_MODE === "demo") {
-      await updateOrder(id, { payment_state: "released", state: "closed" });
-      await addEvent(id, "accepted_demo", "Delivery accepted (demo). No funds moved; in live mode this releases 1 QUSDC to the Forma treasury.");
-      return NextResponse.json({ ok: true, demo: true, payment_state: "released", state: "closed" });
     }
 
     if (!order.chain_job_id) return NextResponse.json({ error: "No onchain job to accept." }, { status: 400 });

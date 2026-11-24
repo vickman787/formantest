@@ -1,9 +1,8 @@
 import { OPENAI_API_KEY, OPENAI_TEXT_MODEL, OPENAI_RESEARCH_MODEL } from "./config";
 
 /**
- * Server-side OpenAI client. No call is ever made without a configured key,
- * and no paid call happens for a demo job. Model IDs come from env, never
- * hardcoded from a spec.
+ * Server-side OpenAI client. No call is ever made without a configured key.
+ * Model IDs come from env, never hardcoded from a spec.
  */
 
 export function openaiConfigured(): boolean {

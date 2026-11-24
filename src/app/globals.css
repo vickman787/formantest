@@ -24,7 +24,6 @@ button { cursor: pointer; }
 .navlink:hover { color: var(--ink); }
 .spacer { flex: 1; }
 .mode-banner { background: var(--ink); color: #fff; font-size: 13px; padding: 8px 0; text-align: center; }
-.mode-banner.demo { background: #5b4a1f; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: 8px; background: var(--coral); color: #fff; padding: 13px 20px; font-size: 14px; font-weight: 600; text-decoration: none; min-height: 44px; }
 .btn.light { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .btn.ink { background: var(--ink); }

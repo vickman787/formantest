@@ -26,7 +26,6 @@ export default function ProjectActions({
   orderId,
   state,
   paymentState,
-  mode,
   chainJobId,
   escrowAddress,
   qusdcAddress,
@@ -34,7 +33,6 @@ export default function ProjectActions({
   orderId: string;
   state: string;
   paymentState: string;
-  mode: "demo" | "live";
   chainJobId: string | null;
   escrowAddress: string;
   qusdcAddress: string;
@@ -151,22 +149,11 @@ export default function ProjectActions({
           <p style={{ fontSize: 13, color: "var(--muted)" }}>
             1 QUSDC · QIE Mainnet · escrow. Gas is separate and paid in QIE.
           </p>
-          {mode === "demo" ? (
-            <>
-              <p className="notice"><b>Simulated payment — no funds move.</b> This demo checkout stands in for the wallet + escrow flow. The live flow will ask your wallet to approve exactly 1 QUSDC and fund the escrow.</p>
-              <button className="btn" disabled={!!busy} onClick={() => call(`/api/orders/${orderId}/payment-sync`, { demo: true }, "fund")}>
-                {busy === "fund" ? "Simulating…" : "Simulate funding (demo) ↗"}
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="notice">Live checkout: your wallet approves exactly 1 QUSDC, then funds the escrow. The server reads the receipt and the escrow event before any work starts — a hash alone proves nothing.</p>
-              <button className="btn" disabled={!!busy || !escrowAddress} onClick={fundLive}>
-                {busy === "fund" ? "Waiting for wallet…" : "Fund 1 QUSDC from my wallet ↗"}
-              </button>
-              {!escrowAddress && <p style={{ fontSize: 12, color: "#a33", marginTop: 8 }}>The escrow is not deployed yet, so live funding is unavailable.</p>}
-            </>
-          )}
+          <p className="notice">Your wallet approves exactly 1 QUSDC, then funds the escrow. The server reads the receipt and the escrow event before any work starts — a hash alone proves nothing.</p>
+          <button className="btn" disabled={!!busy || !escrowAddress} onClick={fundLive}>
+            {busy === "fund" ? "Waiting for wallet…" : "Fund 1 QUSDC from my wallet ↗"}
+          </button>
+          {!escrowAddress && <p style={{ fontSize: 12, color: "#a33", marginTop: 8 }}>The escrow is not deployed yet, so funding is unavailable.</p>}
         </div>
       )}
 
@@ -175,15 +162,9 @@ export default function ProjectActions({
           <h3>Your delivery is ready</h3>
           <p style={{ fontSize: 13, color: "var(--muted)" }}>Check the files below. Accepting releases 1 QUSDC to the Forma treasury. You have 48 hours to review; after that an unaccepted delivery is released automatically.</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {mode === "demo" ? (
-              <button className="btn" disabled={!!busy} onClick={() => call(`/api/orders/${orderId}/decision-sync`, { demo: true }, "accept")}>
-                {busy === "accept" ? "Confirming…" : "Accept delivery ✓"}
-              </button>
-            ) : (
-              <button className="btn" disabled={!!busy} onClick={acceptLive}>
-                {busy === "accept" ? "Waiting for wallet…" : "Accept delivery onchain ✓"}
-              </button>
-            )}
+            <button className="btn" disabled={!!busy} onClick={acceptLive}>
+              {busy === "accept" ? "Waiting for wallet…" : "Accept delivery onchain ✓"}
+            </button>
           </div>
           <div style={{ marginTop: 16 }}>
             <label htmlFor="problem" style={{ fontSize: 12, fontWeight: 700 }}>Report a problem</label>

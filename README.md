@@ -17,18 +17,20 @@ Missed delivery → customer refund. Operator refund for genuine failures.
 
 ## Status (24 Nov 2026)
 
-Demo mode works end to end, tested against the real API with a real wallet
-signature: sign-in, quote, simulated funding, worker generation, delivery
-with manifest hash, private downloads, accept. Website, flyer and promo
-video produce real files. The market report pipeline is built and verified
-against the real OpenAI key (one live web-research call, 8,174 in / 801 out
-tokens, 5 cited sources, HTML + PDF + CSV all pass their checks); it runs
-in the app once `OPENAI_API_KEY` + `OPENAI_RESEARCH_MODEL` are in the
-server env — the key lives in Muse's secure vault for build-time use and
-must be added to Vercel env vars at deploy time. Until then the report
-still fails honestly in the app, and no report is ever faked.
-Live mode needs the escrow deployed on QIE mainnet and `OPENAI_API_KEY` —
-both need the owner's explicit go-ahead.
+Live-only — demo mode was removed 2026-11-24. There is no simulated
+payment and no simulated delivery anywhere in the app. Funding is verified
+from the onchain receipt and escrow event; a job runs only after that.
+Website, flyer and promo video produce real files. The market report
+pipeline is built and verified against the real OpenAI key (one live
+web-research call, 8,174 in / 801 out tokens, 5 cited sources, HTML + PDF +
+CSV all pass their checks); it runs in the app once `OPENAI_API_KEY` +
+`OPENAI_RESEARCH_MODEL` are in the server env — the key lives in Muse's
+secure vault for build-time use and must be added to Vercel env vars at
+deploy time. Until then the report fails honestly in the app, and no
+report is ever faked.
+The app is not fully live yet: it still needs the escrow deployed on QIE
+mainnet, `OPENAI_API_KEY` in the server env, and hosted Postgres + object
+storage for production.
 
 ## Run locally
 
@@ -40,7 +42,7 @@ pnpm dev                     # http://localhost:3000
 pnpm worker                  # background worker (separate shell)
 pnpm test                    # vitest (renderers incl. real ffmpeg video)
 forge test --root contracts  # escrow: 11 tests
-pnpm tsx scripts/e2e-demo.ts # full demo flow vs a running dev server
+pnpm tsx scripts/e2e-anvil.ts  # full live flow vs local anvil chain + escrow
 ```
 
 ## Architecture
@@ -61,13 +63,12 @@ Browser -> Next.js API -> Postgres (orders, quotes, jobs, events, artifacts)
   invents them.
 - Artifacts live in private storage (`artifacts/` locally; object storage in
   production) and are served only after an ownership check.
-- Demo and live modes are separated: demo receipts are always labelled demo
-  and move no funds; live funding is verified from the onchain receipt and
-  escrow event, never from a client-supplied hash alone.
+- Funding is verified from the onchain receipt and escrow event, never
+  from a client-supplied hash alone. There is no simulated payment.
 
 ## Configuration
 
-See `.env.example`. Blank values are required setup, not defaults. Live mode
+See `.env.example`. Blank values are required setup, not defaults. The app
 fails closed when `ESCROW_ADDRESS`/`TREASURY_ADDRESS` are missing. Secrets
 stay server-side; `OPENAI_API_KEY` is never in the client bundle.
 
@@ -75,8 +76,9 @@ stay server-side; `OPENAI_API_KEY` is never in the client bundle.
 
 - Production needs hosted Postgres + private object storage; local disk
   storage is dev-only.
-- Market report is disabled until OpenAI research is wired (paid calls need
-  approval first).
+- Market report needs `OPENAI_API_KEY` + `OPENAI_RESEARCH_MODEL` in the
+  server env; without them it fails honestly (paid calls need approval
+  first).
 - QUSDC reserve backing/redemption are unverified; the app does not advertise
   guaranteed safety or cash redemption.
 - The escrow is unaudited; source verification is not an audit.
@@ -85,5 +87,6 @@ stay server-side; `OPENAI_API_KEY` is never in the client bundle.
 
 Own service studio, brand kits, scoped briefs, template renderers, quality
 checks, delivery manifests with versioned hashes, and the minimal escrow.
-OpenAI is an external API provider, not the product. No Syncly code,
-branding or claims are used.
+OpenAI is an external API provider, not the product. Everything here is
+written fresh for Forma — no copied code, branding or claims from any
+other project.

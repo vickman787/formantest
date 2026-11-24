@@ -1,6 +1,10 @@
 import JSZip from "jszip";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { getPool } from "./db";
 import { saveArtifact } from "./artifacts";
+import { ESCROW_ADDRESS } from "./config";
+import { ESCROW_WRITE_ABI, escrowDeployed, qieChain, readJobStatus } from "./escrow";
 import { addEvent, claimNextQueued, getOrder, setStep, updateOrder, type OrderRow } from "./jobs";
 import { buildManifest, type ManifestFile } from "./manifest";
 import { generateWebsiteCopy, openaiConfigured, researchMarket } from "./openai";
@@ -118,6 +122,36 @@ export async function processOrder(order: OrderRow): Promise<void> {
       manifest: manifest as unknown as Record<string, unknown>,
       review_deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
     });
+    // Seal the delivery onchain: the operator records the manifest hash in
+    // the escrow, moving the job Funded → Delivered. Without this the
+    // customer cannot accept onchain (acceptDelivery requires Delivered).
+    // A seal failure never discards the delivery — it is recorded loudly
+    // so the operator can re-seal; the customer is told in the timeline.
+    if (order.chain_job_id && escrowDeployed()) {
+      try {
+        const key = process.env.OPERATOR_PRIVATE_KEY as `0x${string}` | undefined;
+        if (!key) throw new Error("Operator signer is not configured on the server.");
+        const onchain = await readJobStatus(order.chain_job_id as `0x${string}`);
+        if (onchain === 1) {
+          const operator = privateKeyToAccount(key);
+          const client = createWalletClient({ account: operator, chain: qieChain, transport: http(qieChain.rpcUrls.default.http[0]) });
+          const sealTx = await client.writeContract({
+            address: ESCROW_ADDRESS as `0x${string}`,
+            abi: ESCROW_WRITE_ABI,
+            functionName: "submitDelivery",
+            args: [order.chain_job_id as `0x${string}`, `0x${hash}` as `0x${string}`],
+          });
+          await addEvent(order.id, "sealed", `Delivery sealed onchain: ${sealTx}. Manifest ${hash.slice(0, 12)}…`);
+        } else if (onchain === 2 || onchain === 3) {
+          await addEvent(order.id, "sealed", "Delivery was already sealed onchain.");
+        } else {
+          throw new Error(`Onchain job is not funded (status ${onchain ?? "unknown"}), so the delivery cannot be sealed yet.`);
+        }
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        await addEvent(order.id, "seal_failed", `Delivery is ready, but the onchain seal failed: ${message} The operator must re-seal before acceptance can release the payment.`);
+      }
+    }
     await setStep(order.id, "deliver", "done", `Delivery v1 ready. Manifest ${hash.slice(0, 12)}… ${extraNote}`);
     await addEvent(order.id, "delivered", `Delivery ready for review. ${extraNote}`);
   } catch (e) {

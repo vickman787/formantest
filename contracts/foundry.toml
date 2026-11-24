@@ -1,0 +1,17 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["vendor"]
+solc = "0.8.24"
+
+remappings = [
+  "@openzeppelin/contracts/=vendor/openzeppelin-contracts/",
+  "forge-std/=vendor/forge-std/",
+]
+
+[rpc_endpoints]
+qie_testnet = "https://rpc1testnet.qie.digital"
+qie = "https://rpc1mainnet.qie.digital"
+
+[etherscan]
+qie = { key = "${QIE_EXPLORER_API_KEY}", chain = 1990, url = "https://mainnet.qie.digital/api" }
